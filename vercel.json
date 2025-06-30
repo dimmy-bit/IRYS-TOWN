@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "*.html",
+      "src": "*.{html,js,css}",
       "use": "@vercel/static"
     },
     {
@@ -12,8 +12,60 @@
   ],
   "routes": [
     {
+      "src": "/level1",
+      "dest": "/level1.html"
+    },
+    {
+      "src": "/level2",
+      "dest": "/level2.html"
+    },
+    {
+      "src": "/level3",
+      "dest": "/level3.html"
+    },
+    {
+      "src": "/level4",
+      "dest": "/level4.html"
+    },
+    {
+      "src": "/level5",
+      "dest": "/level5.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/level1",
+      "headers": [
+        { "key": "Cache-Control", "value": "s-maxage=0, stale-while-revalidate" }
+      ]
+    },
+    {
+      "source": "/level2",
+      "headers": [
+        { "key": "Cache-Control", "value": "s-maxage=0, stale-while-revalidate" }
+      ]
+    },
+    {
+      "source": "/level3",
+      "headers": [
+        { "key": "Cache-Control", "value": "s-maxage=0, stale-while-revalidate" }
+      ]
+    },
+    {
+      "source": "/level4",
+      "headers": [
+        { "key": "Cache-Control", "value": "s-maxage=0, stale-while-revalidate" }
+      ]
+    },
+    {
+      "source": "/level5",
+      "headers": [
+        { "key": "Cache-Control", "value": "s-maxage=0, stale-while-revalidate" }
+      ]
     }
   ]
 }

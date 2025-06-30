@@ -126,8 +126,8 @@
             <div id="results" style="display: none; text-align: center;">
                 <h2 id="result-title" style="color: var(--primary-color);"></h2>
                 <p id="result-message" style="margin: 1rem 0;"></p>
-                <button onclick="window.location.href='index.html'" class="back-button">Back to Main Menu</button>
-                <button onclick="window.location.href='level3.html'" id="next-level" class="back-button" style="background: var(--success-color); display: none; margin-left: 1rem;">Next Level</button>
+                <button id="backButton" class="back-button" onclick="window.location.href='/';">Back to Main Menu</button>
+                <button onclick="window.location.href='/level3'" id="next-level" class="back-button" style="background: var(--success-color); display: none; margin-left: 1rem;">Next Level</button>
             </div>
         </main>
     </div>
@@ -384,18 +384,17 @@
             if (percentage >= 80) {
                 resultTitle.textContent = 'Level Complete!';
                 resultMessage.textContent = `You scored ${score} out of ${totalQuestions} (${percentage}%). Well done! You've unlocked the next level.`;
+                
+                // Show next level button
+                const nextLevelBtn = document.getElementById('next-level');
                 nextLevelBtn.style.display = 'inline-block';
                 
                 // Save progress
-                const gameState = JSON.parse(localStorage.getItem('irysTownProgress') || '{}');
-                gameState.completedLevels = gameState.completedLevels || [];
-                if (!gameState.completedLevels.includes(2)) {
-                    gameState.completedLevels.push(2);
-                    localStorage.setItem('irysTownProgress', JSON.stringify(gameState));
-                }
+                localStorage.setItem('level2_completed', 'true');
             } else {
                 resultTitle.textContent = 'Try Again!';
                 resultMessage.textContent = `You scored ${score} out of ${totalQuestions} (${percentage}%). You need at least 80% to unlock the next level.`;
+                const nextLevelBtn = document.getElementById('next-level');
                 nextLevelBtn.style.display = 'none';
             }
         }

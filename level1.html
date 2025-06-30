@@ -87,7 +87,7 @@
                 <button onclick="completeLevel()" class="back-button" style="background: var(--success-color);">Continue to Next Level</button>
             </div>
 
-            <button onclick="window.location.href='index.html'" class="back-button" style="margin-top: 2rem;">Back to Main Menu</button>
+            <button onclick="window.location.href='/'" class="back-button" style="margin-top: 2rem;">Back to Main Menu</button>
         </main>
     </div>
 
@@ -303,16 +303,19 @@
         }
 
         function completeLevel() {
+            // Play level complete sound
             audioManager.play('levelComplete');
             
-            // Save progress and go to next level
-            const gameState = JSON.parse(localStorage.getItem('irysTownProgress') || '{}');
-            gameState.completedLevels = gameState.completedLevels || [];
-            if (!gameState.completedLevels.includes(1)) {
-                gameState.completedLevels.push(1);
-                localStorage.setItem('irysTownProgress', JSON.stringify(gameState));
-            }
-            window.location.href = 'index.html';
+            // Mark level as completed in localStorage
+            localStorage.setItem('level1_completed', 'true');
+            
+            // Show completion message
+            alert('Congratulations! You have completed Level 1: Irys World Tour!');
+            
+            // Redirect to main menu after a short delay
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1500);
         }
     </script>
 </body>
