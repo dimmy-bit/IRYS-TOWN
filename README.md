@@ -90,7 +90,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 📞 Contact
 
-Have questions or feedback? Reach out to us on [Twitter](https://twitter.com/irys_xyz) or join our [Telegram](https://t.me/irys_community) community!
+Have questions or feedback? Reach out to us on [Twitter](https://x.com/0XMIRX) or join our [Telegram](https://t.me/Mirkhan1090) community!
 
 ---
 
