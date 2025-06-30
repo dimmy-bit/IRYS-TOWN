@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Irys Town - An interactive educational game to learn about Irys blockchain. Explore, learn, and have fun while discovering decentralized storage and more!">
+    <meta name="keywords" content="Irys, blockchain, game, education, crypto, decentralized storage, web3">
+    <meta name="author" content="MIR">
+    <meta property="og:title" content="Irys Town - Explore, Learn, and Build on Irys!">
+    <meta property="og:description" content="An interactive educational game to learn about Irys blockchain. Explore, learn, and have fun while discovering decentralized storage and more!">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://irys.xyz/town">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Irys Town - Explore, Learn, and Build on Irys!</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #00ffff;
+            --secondary-color: #00ffaa;
+            --background-dark: #0a0a1a;
+            --card-bg: rgba(20, 20, 40, 0.7);
+            --card-hover: rgba(40, 40, 80, 0.8);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0ff;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Poppins', sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 1rem 0;
+        }
+
+        .game-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color);
+            margin-bottom: 1rem;
+            letter-spacing: 2px;
+            animation: flicker 8s infinite alternate;
+        }
+
+        .tagline {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .level-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            flex: 1;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 1.5rem;
+        }
+
+        .level-selector::after {
+            content: '';
+            width: 100%;
+            order: 1;
+        }
+
+        .level-card:nth-child(n+4) {
+            order: 2;
+        }
+
+        .level-card:nth-child(4) {
+            grid-column: 2;
+        }
+
+        .level-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 1.8rem;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            min-height: 220px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .level-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .level-card:hover {
+            transform: translateY(-5px);
+            background: var(--card-hover);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .level-card:hover::before {
+            opacity: 1;
+        }
+
+        .level-card h3 {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .level-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .level-card.locked {
+            opacity: 0.7;
+            filter: grayscale(50%);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: auto;
+            align-self: flex-start;
+        }
+
+        .status.completed {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+
+        .status.locked {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+
+        @keyframes flicker {
+            0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+                text-shadow: 0 0 10px var(--primary-color), 
+                             0 0 20px var(--primary-color), 
+                             0 0 30px var(--primary-color);
+            }
+            20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+                text-shadow: none;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .level-selector {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 800px;
+            }
+            
+            .level-card:nth-child(4) {
+                grid-column: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem 1rem;
+            }
+            
+            .game-title {
+                font-size: 2rem;
+            }
+            
+            .tagline {
+                font-size: 1rem;
+            }
+            
+            .level-selector {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+            }
+            
+            .level-card:nth-child(4) {
+                grid-column: auto;
+            }
+        }
+    </style>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="favicon.ico">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Irys Town">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="game-title flicker">IRYS TOWN</h1>
+            <p class="tagline">Explore, Learn, and Build on Irys!</p>
+        </header>
+        
+        <main class="level-selector">
+            <div class="level-card" data-level="1" id="level1">
+                <h3>Level 1: Irys World Tour</h3>
+                <p>Explore the Irys planet! Click zones like Gas Fields and Security Vault to learn its secrets.</p>
+                <div class="status completed">Completed!</div>
+            </div>
+            
+            <div class="level-card" data-level="2" id="level2">
+                <h3>Level 2: Irys Trivia Dash</h3>
+                <p>Test your knowledge about Irys with this interactive quiz. Answer questions and learn as you go!</p>
+                <div class="status completed">Completed!</div>
+            </div>
+            
+            <div class="level-card" data-level="3" id="level3">
+                <h3>Level 3: Irys Code Challenge</h3>
+                <p>Put your coding skills to the test by solving real-world Irys integration challenges.</p>
+                <div class="status">In Progress</div>
+            </div>
+            
+            <div class="level-card locked" data-level="4" id="level4">
+                <h3>Level 4: Irys Scenario Simulator</h3>
+                <p>Experience real-world scenarios and learn how to implement Irys solutions in practical applications.</p>
+                <div class="status locked">Locked</div>
+            </div>
+            
+            <div class="level-card locked" data-level="5" id="level5">
+                <h3>Level 5: Irys Final Quest</h3>
+                <p>Combine all your knowledge in this final challenge that tests everything you've learned about Irys.</p>
+                <div class="status locked">Locked</div>
+            </div>
+        </main>
+        
+        <footer>
+            <div class="social-links">
+                <a href="https://x.com/0XMIRX" target="_blank" class="social-link">X (0XMIRX)</a>
+                <a href="https://x.com/irys_xyz" target="_blank" class="social-link">X (Twitter)</a>
+                <a href="https://github.com/Irys-xyz" target="_blank" class="social-link">GitHub</a>
+                <a href="https://docs.irys.xyz/" target="_blank" class="social-link">Documentation</a>
+            </div>
+            <p class="made-by">Made with ❤️ by MIR | An educational experience about Irys</p>
+        </footer>
+    </div>
+
+    <!-- Game Audio Elements -->
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <audio id="levelCompleteSound" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-09a.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="buttonHoverSound" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-09.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="levelStartSound" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="errorSound" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script src="script.js"></script>
+    <script src="register-sw.js"></script>
+    <script>
+        // Audio Manager
+        const audioManager = {
+            // Audio elements
+            bgMusic: document.getElementById('bgMusic'),
+            levelComplete: document.getElementById('levelCompleteSound'),
+            buttonHover: document.getElementById('buttonHoverSound'),
+            levelStart: document.getElementById('levelStartSound'),
+            error: document.getElementById('errorSound'),
+            
+            // Play sound function
+            play(sound, volume = 0.5) {
+                try {
+                    const audio = this[sound];
+                    if (audio) {
+                        audio.volume = volume;
+                        audio.currentTime = 0;
+                        audio.play().catch(e => console.log('Audio play failed:', e));
+                    }
+                } catch (e) {
+                    console.error('Error playing sound:', e);
+                }
+            },
+            
+            // Set background music
+            setBgMusic(enabled) {
+                if (enabled) {
+                    this.bgMusic.volume = 0.3;
+                    this.bgMusic.play().catch(e => console.log('Background music play failed:', e));
+                } else {
+                    this.bgMusic.pause();
+                }
+            }
+        };
+        
+        // Initialize audio on user interaction
+        function initAudio() {
+            // Enable audio on first user interaction
+            const enableAudio = () => {
+                audioManager.setBgMusic(true);
+                document.removeEventListener('click', enableAudio);
+                document.removeEventListener('keydown', enableAudio);
+            };
+            
+            document.addEventListener('click', enableAudio);
+            document.addEventListener('keydown', enableAudio);
+            
+            // Add hover sound to all buttons and links
+            document.querySelectorAll('button, a, .level-card').forEach(element => {
+                element.addEventListener('mouseenter', () => {
+                    audioManager.play('buttonHover', 0.3);
+                });
+            });
+            
+            // Add click sound to level cards
+            document.querySelectorAll('.level-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    if (!card.classList.contains('locked')) {
+                        audioManager.play('levelStart');
+                    } else {
+                        audioManager.play('error');
+                    }
+                });
+            });
+        }
+        
+        // Initialize audio when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initAudio);
+        
+        // Function to play level complete sound (can be called from other pages)
+        function playLevelComplete() {
+            audioManager.play('levelComplete');
+        }
+        
+        // Function to play error sound (can be called from other pages)
+        function playErrorSound() {
+            audioManager.play('error');
+        }
+    </script>
+    <script>
+        // Add any additional initialization code here
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if the page is being loaded from the cache
+            if (window.performance) {
+                if (performance.navigation.type === 1) {
+                    console.log('This page is loaded by refreshing the page');
+                } else {
+                    console.log('This page is loaded for the first time');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

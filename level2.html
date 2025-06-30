@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Irys Trivia Dash - IRYS TOWN</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Game Audio Elements -->
+    <audio id="bgMusic" loop>
+        <!-- Upbeat quiz music -->
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <audio id="correctSound" preload="auto">
+        <source src="https://www.soundjay.com/button/sounds/button-09a.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="wrongSound" preload="auto">
+        <source src="https://www.soundjay.com/button/sounds/button-10.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="buttonHoverSound" preload="auto">
+        <source src="https://www.soundjay.com/button/sounds/button-21.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="timerTickSound" preload="auto">
+        <source src="https://www.soundjay.com/button/sounds/button-11.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="levelCompleteSound" preload="auto">
+        <source src="https://www.soundjay.com/button/sounds/button-09a.mp3" type="audio/mpeg">
+    </audio>
+    <style>
+        .trivia-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            text-align: center;
+        }
+        .question {
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .option {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .option:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateX(5px);
+        }
+        .option.correct {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff00;
+        }
+        .option.incorrect {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: #ff0000;
+        }
+        .timer {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+            color: var(--primary-color);
+        }
+        .score {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+        }
+        .progress-container {
+            width: 100%;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 5px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 10px;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="game-title">IRYS TRIVIA DASH</h1>
+            <p class="tagline">Test your Irys knowledge!</p>
+        </header>
+        
+        <main class="trivia-container">
+            <div id="game-area">
+                <div class="timer" id="timer">Time: 30s</div>
+                <div class="score" id="score">Score: 0/5</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <div class="question" id="question">
+                    Loading question...
+                </div>
+                <div class="options" id="options">
+                    <!-- Options will be inserted here by JavaScript -->
+                </div>
+            </div>
+
+            <div id="results" style="display: none; text-align: center;">
+                <h2 id="result-title" style="color: var(--primary-color);"></h2>
+                <p id="result-message" style="margin: 1rem 0;"></p>
+                <button onclick="window.location.href='index.html'" class="back-button">Back to Main Menu</button>
+                <button onclick="window.location.href='level3.html'" id="next-level" class="back-button" style="background: var(--success-color); display: none; margin-left: 1rem;">Next Level</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Audio Manager
+        const audioManager = {
+            // Audio elements
+            bgMusic: document.getElementById('bgMusic'),
+            correctSound: document.getElementById('correctSound'),
+            wrongSound: document.getElementById('wrongSound'),
+            buttonHover: document.getElementById('buttonHoverSound'),
+            timerTick: document.getElementById('timerTickSound'),
+            levelComplete: document.getElementById('levelCompleteSound'),
+            
+            // Play sound function
+            play(sound, volume = 0.5) {
+                try {
+                    const audio = this[sound];
+                    if (audio) {
+                        audio.volume = volume;
+                        audio.currentTime = 0;
+                        audio.play().catch(e => console.log('Audio play failed:', e));
+                    }
+                } catch (e) {
+                    console.error('Error playing sound:', e);
+                }
+            },
+            
+            // Set background music
+            setBgMusic(enabled) {
+                if (enabled) {
+                    this.bgMusic.volume = 0.3;
+                    this.bgMusic.play().catch(e => console.log('Background music play failed:', e));
+                } else {
+                    this.bgMusic.pause();
+                }
+            }
+        };
+
+        // Initialize audio on user interaction
+        function initAudio() {
+            // Enable audio on first user interaction
+            const enableAudio = () => {
+                audioManager.setBgMusic(true);
+                document.removeEventListener('click', enableAudio);
+                document.removeEventListener('keydown', enableAudio);
+            };
+            
+            document.addEventListener('click', enableAudio);
+            document.addEventListener('keydown', enableAudio);
+            
+            // Add hover sound to all buttons and options
+            document.querySelectorAll('button, .option').forEach(element => {
+                element.addEventListener('mouseenter', () => {
+                    audioManager.play('buttonHover', 0.3);
+                });
+            });
+        }
+
+        // Initialize audio when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initAudio);
+
+        const questions = [
+            {
+                question: "What is Irys primarily used for?",
+                options: ["Decentralized storage", "Smart contracts", "Both A and B", "Neither A nor B"],
+                correct: 0,
+                explanation: "Irys is primarily focused on decentralized storage solutions, though it can integrate with smart contract platforms."
+            },
+            {
+                question: "Which consensus mechanism does Irys use?",
+                options: ["Proof of Work", "Proof of Stake", "Proof of Access", "Delegated Proof of Stake"],
+                correct: 2,
+                explanation: "Irys uses Proof of Access, which is different from traditional consensus mechanisms."
+            },
+            {
+                question: "What makes Irys different from traditional storage solutions?",
+                options: ["Higher costs", "Centralized control", "Permanent, uncensorable storage", "Limited accessibility"],
+                correct: 2,
+                explanation: "Irys provides permanent, uncensorable storage, which is a key differentiator from traditional storage solutions."
+            },
+            {
+                question: "Which blockchain is Irys built on top of?",
+                options: ["Ethereum", "Solana", "Arweave", "Avalanche"],
+                correct: 2,
+                explanation: "Irys is built on top of Arweave, which provides the underlying storage layer."
+            },
+            {
+                question: "What is the native token of Irys?",
+                options: ["IRYS", "ETH", "AR", "SOL"],
+                correct: 0,
+                explanation: "IRYS is the native token of the Irys network, used for transactions and network operations."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let timeLeft = 30;
+        let timer;
+        let selectedAnswer = null;
+        let questionsAnswered = 0;
+        const totalQuestions = 5;
+        const timePerQuestion = 30;
+
+        // DOM Elements
+        const questionEl = document.getElementById('question');
+        const optionsEl = document.getElementById('options');
+        const scoreEl = document.getElementById('score');
+        const timerEl = document.getElementById('timer');
+        const progressBar = document.getElementById('progress-bar');
+        const gameArea = document.getElementById('game-area');
+        const resultsArea = document.getElementById('results');
+        const resultTitle = document.getElementById('result-title');
+        const resultMessage = document.getElementById('result-message');
+        const nextLevelBtn = document.getElementById('next-level');
+
+        // Initialize the game
+        document.addEventListener('DOMContentLoaded', () => {
+            loadQuestion();
+            startTimer();
+        });
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                showResults();
+                return;
+            }
+
+            const question = questions[currentQuestion];
+            questionEl.textContent = question.question;
+            optionsEl.innerHTML = '';
+            
+            // Reset timer for new question
+            timeLeft = timePerQuestion;
+            updateTimerDisplay();
+            
+            // Reset selected answer
+            selectedAnswer = null;
+            
+            // Create option buttons
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                optionsEl.appendChild(button);
+            });
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            timerEl.textContent = `Time: ${timeLeft}s`;
+            const progress = (timeLeft / timePerQuestion) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // Change color based on time remaining
+            if (timeLeft <= 10) {
+                timerEl.style.color = '#ff4444';
+                progressBar.style.background = '#ff4444';
+                
+                // Play tick sound when time is running low
+                if (timeLeft < 10 && timeLeft > 0) {
+                    audioManager.play('timerTick', 0.3);
+                }
+            } else {
+                timerEl.style.color = 'var(--primary-color)';
+                progressBar.style.background = 'var(--primary-color)';
+            }
+        }
+
+        function selectAnswer(selectedIndex) {
+            if (selectedAnswer !== null) return; // Prevent multiple selections
+            
+            clearInterval(timer);
+            selectedAnswer = selectedIndex;
+            const question = questions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+            
+            // Disable all options
+            options.forEach(option => {
+                option.style.pointerEvents = 'none';
+            });
+            
+            // Highlight selected answer
+            if (selectedIndex === question.correct) {
+                options[selectedIndex].classList.add('correct');
+                score++;
+                scoreEl.textContent = `Score: ${score}/${totalQuestions}`;
+                audioManager.play('correctSound');
+            } else {
+                options[selectedIndex].classList.add('incorrect');
+                options[question.correct].classList.add('correct');
+                audioManager.play('wrongSound');
+            }
+            
+            // Move to next question after a delay
+            questionsAnswered++;
+            currentQuestion++;
+            
+            if (questionsAnswered < totalQuestions) {
+                setTimeout(loadQuestion, 2000);
+                startTimer();
+            } else {
+                setTimeout(showResults, 2000);
+            }
+        }
+
+        function timeUp() {
+            if (selectedAnswer !== null) return;
+            
+            const options = document.querySelectorAll('.option');
+            const question = questions[currentQuestion];
+            
+            // Disable all options
+            options.forEach(option => {
+                option.style.pointerEvents = 'none';
+            });
+            
+            // Highlight correct answer
+            options[question.correct].classList.add('correct');
+            
+            // Move to next question
+            questionsAnswered++;
+            currentQuestion++;
+            
+            if (questionsAnswered < totalQuestions) {
+                setTimeout(loadQuestion, 2000);
+                startTimer();
+            } else {
+                setTimeout(showResults, 2000);
+            }
+        }
+
+        function showResults() {
+            clearInterval(timer);
+            gameArea.style.display = 'none';
+            resultsArea.style.display = 'block';
+            
+            const percentage = Math.round((score / totalQuestions) * 100);
+            
+            if (percentage >= 80) {
+                resultTitle.textContent = 'Level Complete!';
+                resultMessage.textContent = `You scored ${score} out of ${totalQuestions} (${percentage}%). Well done! You've unlocked the next level.`;
+                nextLevelBtn.style.display = 'inline-block';
+                
+                // Save progress
+                const gameState = JSON.parse(localStorage.getItem('irysTownProgress') || '{}');
+                gameState.completedLevels = gameState.completedLevels || [];
+                if (!gameState.completedLevels.includes(2)) {
+                    gameState.completedLevels.push(2);
+                    localStorage.setItem('irysTownProgress', JSON.stringify(gameState));
+                }
+            } else {
+                resultTitle.textContent = 'Try Again!';
+                resultMessage.textContent = `You scored ${score} out of ${totalQuestions} (${percentage}%). You need at least 80% to unlock the next level.`;
+                nextLevelBtn.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

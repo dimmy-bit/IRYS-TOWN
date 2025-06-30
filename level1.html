@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Irys World Tour - IRYS TOWN</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .zone-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .zone {
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .zone:hover {
+            transform: scale(1.05);
+            background: rgba(0, 212, 255, 0.2);
+        }
+        .zone h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        .back-button {
+            margin-top: 2rem;
+            padding: 0.8rem 1.5rem;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 5px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .back-button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="game-title">IRYS WORLD TOUR</h1>
+            <p class="tagline">Explore the Irys planet and learn its secrets!</p>
+        </header>
+        
+        <main>
+            <div class="zone-container">
+                <div class="zone" id="gas-fields">
+                    <h3>Gas Fields</h3>
+                    <p>Learn about transaction fees and gas optimization</p>
+                </div>
+                <div class="zone" id="security-vault">
+                    <h3>Security Vault</h3>
+                    <p>Discover Irys security features</p>
+                </div>
+                <div class="zone" id="data-core">
+                    <h3>Data Core</h3>
+                    <p>Explore data storage solutions</p>
+                </div>
+                <div class="zone" id="evm-gateway">
+                    <h3>EVM Gateway</h3>
+                    <p>Connect with Ethereum Virtual Machine</p>
+                </div>
+            </div>
+
+            <div id="zone-info" style="margin-top: 2rem; display: none;">
+                <h2 id="zone-title" style="color: var(--primary-color);"></h2>
+                <p id="zone-description" style="margin: 1rem 0;"></p>
+                <button onclick="hideZoneInfo()" class="back-button">Back to Zones</button>
+            </div>
+
+            <div id="level-complete" style="display: none; text-align: center; margin-top: 2rem;">
+                <h2 style="color: var(--success-color);">Level Complete!</h2>
+                <p>You've explored all zones in Irys World Tour.</p>
+                <button onclick="completeLevel()" class="back-button" style="background: var(--success-color);">Continue to Next Level</button>
+            </div>
+
+            <button onclick="window.location.href='index.html'" class="back-button" style="margin-top: 2rem;">Back to Main Menu</button>
+        </main>
+    </div>
+
+    <!-- Game Audio Elements -->
+    <audio id="bgMusic" loop>
+        <!-- Chill tutorial music (low intensity) -->
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <audio id="levelCompleteSound" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-09a.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="buttonHoverSound" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-09.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="levelStartSound" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="errorSound" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <audio id="zoneSelectSound" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-21.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Debug log
+        console.log('Script loaded, initializing audio...');
+        
+        // Audio Manager
+        const audioManager = {
+            // Audio elements
+            bgMusic: document.getElementById('bgMusic'),
+            levelComplete: document.getElementById('levelCompleteSound'),
+            buttonHover: document.getElementById('buttonHoverSound'),
+            levelStart: document.getElementById('levelStartSound'),
+            error: document.getElementById('errorSound'),
+            
+            // Play sound function
+            play(sound, volume = 0.5) {
+                try {
+                    const audio = this[sound];
+                    if (audio) {
+                        audio.volume = volume;
+                        audio.currentTime = 0;
+                        audio.play().catch(e => console.log('Audio play failed:', e));
+                    }
+                } catch (e) {
+                    console.error('Error playing sound:', e);
+                }
+            },
+            
+            // Set background music
+            setBgMusic(enabled) {
+                console.log('Setting bg music:', enabled);
+                if (enabled) {
+                    this.bgMusic.volume = 0.3;
+                    const playPromise = this.bgMusic.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.log('Background music play failed:', error);
+                            // Show a button to unmute
+                            showUnmuteButton();
+                        });
+                    }
+                } else {
+                    this.bgMusic.pause();
+                }
+            }
+        };
+
+        // Show unmute button when audio is blocked
+        function showUnmuteButton() {
+            const existingButton = document.getElementById('unmuteButton');
+            if (!existingButton) {
+                const button = document.createElement('button');
+                button.id = 'unmuteButton';
+                button.textContent = '🔊 Click to enable sound';
+                button.style.position = 'fixed';
+                button.style.bottom = '20px';
+                button.style.right = '20px';
+                button.style.zIndex = '1000';
+                button.style.padding = '10px 20px';
+                button.style.backgroundColor = 'var(--primary-color)';
+                button.style.color = '#000';
+                button.style.border = 'none';
+                button.style.borderRadius = '5px';
+                button.style.cursor = 'pointer';
+                button.onclick = () => {
+                    audioManager.setBgMusic(true);
+                    button.remove();
+                };
+                document.body.appendChild(button);
+            }
+        }
+
+        // Initialize audio on user interaction
+        function initAudio() {
+            console.log('initAudio called');
+            
+            // Try to start audio immediately (might be blocked by browser)
+            audioManager.bgMusic.volume = 0;
+            const playPromise = audioManager.bgMusic.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log('Autoplay prevented, waiting for user interaction');
+                    showUnmuteButton();
+                });
+            }
+
+            // Enable audio on first user interaction
+            const enableAudio = () => {
+                console.log('User interaction detected, enabling audio...');
+                audioManager.setBgMusic(true);
+                document.removeEventListener('click', enableAudio);
+                document.removeEventListener('keydown', enableAudio);
+            };
+            
+            document.addEventListener('click', enableAudio, { once: true });
+            document.addEventListener('keydown', enableAudio, { once: true });
+            
+            // Add hover sound to all buttons and zones
+            document.querySelectorAll('button, .zone').forEach(element => {
+                element.addEventListener('mouseenter', () => {
+                    audioManager.play('buttonHover', 0.3);
+                });
+            });
+            
+            // Try to resume audio context on any user interaction
+            document.addEventListener('click', () => {
+                if (audioManager.bgMusic.paused) {
+                    audioManager.bgMusic.play().catch(e => console.log('Resume failed:', e));
+                }
+            }, { once: true });
+        }
+        const zones = {
+            'gas-fields': {
+                title: 'Gas Fields',
+                description: 'The Gas Fields of Irys are where transaction fees are processed. Here, you can learn how to optimize your transactions to use minimal gas while maintaining security and speed. Irys uses a unique gas model that makes transactions more predictable and cost-effective compared to traditional blockchains.'
+            },
+            'security-vault': {
+                title: 'Security Vault',
+                description: 'The Security Vault is the most protected area of Irys. It showcases the advanced cryptographic techniques used to secure transactions and data. Learn about Irys\'s multi-signature wallets, time-locks, and other security features that protect your assets.'
+            },
+            'data-core': {
+                title: 'Data Core',
+                description: 'At the heart of Irys lies the Data Core, where all the blockchain data is stored and processed. Explore how Irys handles data storage, retrieval, and verification in a decentralized manner, ensuring data integrity and availability.'
+            },
+            'evm-gateway': {
+                title: 'EVM Gateway',
+                description: 'The EVM Gateway connects Irys with the Ethereum Virtual Machine, allowing for seamless interaction with Ethereum-based smart contracts and dApps. Learn how to bridge assets and interact with the broader Ethereum ecosystem through Irys.'
+            }
+        };
+
+        const visitedZones = new Set();
+        const totalZones = Object.keys(zones).length;
+
+        // Initialize the level
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM fully loaded');
+            try {
+                initAudio();
+                // Set up zone click handlers
+                Object.keys(zones).forEach(zoneId => {
+                    const element = document.getElementById(zoneId);
+                    if (element) {
+                        element.addEventListener('click', () => {
+                            showZoneInfo(zoneId);
+                        });
+                    } else {
+                        console.error('Element not found:', zoneId);
+                    }
+                });
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
+        });
+
+        function showZoneInfo(zoneId) {
+            audioManager.play('zoneSelectSound');
+            const zone = zones[zoneId];
+            document.getElementById('zone-title').textContent = zone.title;
+            document.getElementById('zone-description').textContent = zone.description;
+            
+            // Hide all zones and show the info
+            document.querySelector('.zone-container').style.display = 'none';
+            document.getElementById('zone-info').style.display = 'block';
+            
+            // Mark zone as visited
+            if (!visitedZones.has(zoneId)) {
+                visitedZones.add(zoneId);
+                
+                // Check if all zones are visited
+                if (visitedZones.size === totalZones) {
+                    setTimeout(() => {
+                        document.getElementById('level-complete').style.display = 'block';
+                    }, 1000);
+                }
+            }
+        }
+
+        function hideZoneInfo() {
+            audioManager.play('buttonHover');
+            document.getElementById('zone-info').style.display = 'none';
+            document.querySelector('.zone-container').style.display = 'grid';
+        }
+
+        function completeLevel() {
+            audioManager.play('levelComplete');
+            
+            // Save progress and go to next level
+            const gameState = JSON.parse(localStorage.getItem('irysTownProgress') || '{}');
+            gameState.completedLevels = gameState.completedLevels || [];
+            if (!gameState.completedLevels.includes(1)) {
+                gameState.completedLevels.push(1);
+                localStorage.setItem('irysTownProgress', JSON.stringify(gameState));
+            }
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

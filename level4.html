@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Irys Scenario Simulator - IRYS TOWN</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Game Audio Elements -->
+    <audio id="bgMusic" loop>
+        <!-- Action/dynamic music -->
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <audio id="optionSelectSound" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-21.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="correctAnswerSound" preload="auto">
+        <source src="https://www.soundjay.com/button/sounds/button-09a.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="wrongAnswerSound" preload="auto">
+        <source src="https://www.soundjay.com/button/sounds/button-10.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="scenarioCompleteSound" preload="auto">
+        <source src="https://www.soundjay.com/button/sounds/button-09a.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="buttonHoverSound" preload="auto">
+        <source src="https://www.soundjay.com/button/sounds/button-21.mp3" type="audio/mpeg">
+    </audio>
+    <style>
+        .scenario-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            text-align: center;
+        }
+        .scenario {
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .option {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .option:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateX(5px);
+        }
+        .option.correct {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff00;
+        }
+        .option.incorrect {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: #ff0000;
+        }
+        .feedback {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 5px;
+            display: none;
+        }
+        .feedback.correct {
+            background: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #00ff00;
+        }
+        .feedback.incorrect {
+            background: rgba(255, 0, 0, 0.1);
+            border-left: 4px solid #ff0000;
+        }
+        .progress-container {
+            width: 100%;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 5px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 10px;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="game-title">IRYS SCENARIO SIMULATOR</h1>
+            <p class="tagline">Test your decision-making skills with real-world scenarios!</p>
+        </header>
+        
+        <main class="scenario-container">
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            <div id="scenario-area">
+                <div class="scenario" id="scenario">
+                    <h2 id="scenario-title">Loading scenario...</h2>
+                    <p id="scenario-description"></p>
+                </div>
+                
+                <div class="options" id="options">
+                    <!-- Options will be inserted here by JavaScript -->
+                </div>
+                
+                <div class="feedback" id="feedback"></div>
+                
+                <button id="next-btn" class="back-button" style="display: none; margin-top: 1rem;">Next Scenario</button>
+            </div>
+            
+            <div id="results" style="display: none; text-align: center;">
+                <h2 id="result-title" style="color: var(--primary-color);"></h2>
+                <p id="result-message" style="margin: 1rem 0;"></p>
+                <div id="scenario-results" style="margin: 1rem 0; text-align: left;"></div>
+                <button onclick="window.location.href='index.html'" class="back-button">Back to Main Menu</button>
+                <button onclick="window.location.href='level5.html'" id="next-level" class="back-button" style="background: var(--success-color); display: none; margin-left: 1rem;">Final Quest</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Audio Manager
+        const audioManager = {
+            // Audio elements
+            bgMusic: document.getElementById('bgMusic'),
+            optionSelect: document.getElementById('optionSelectSound'),
+            correctAnswer: document.getElementById('correctAnswerSound'),
+            wrongAnswer: document.getElementById('wrongAnswerSound'),
+            scenarioComplete: document.getElementById('scenarioCompleteSound'),
+            buttonHover: document.getElementById('buttonHoverSound'),
+            
+            // Play sound function
+            play(sound, volume = 0.5) {
+                try {
+                    const audio = this[sound];
+                    if (audio) {
+                        audio.volume = volume;
+                        audio.currentTime = 0;
+                        audio.play().catch(e => console.log('Audio play failed:', e));
+                    }
+                } catch (e) {
+                    console.error('Error playing sound:', e);
+                }
+            },
+            
+            // Set background music
+            setBgMusic(enabled) {
+                if (enabled) {
+                    this.bgMusic.volume = 0.3;
+                    this.bgMusic.play().catch(e => console.log('Background music play failed:', e));
+                } else {
+                    this.bgMusic.pause();
+                }
+            }
+        };
+
+        // Initialize audio on user interaction
+        function initAudio() {
+            // Enable audio on first user interaction
+            const enableAudio = () => {
+                audioManager.setBgMusic(true);
+                document.removeEventListener('click', enableAudio);
+                document.removeEventListener('keydown', enableAudio);
+            };
+            
+            document.addEventListener('click', enableAudio);
+            document.addEventListener('keydown', enableAudio);
+            
+            // Add hover sound to all buttons and options
+            document.querySelectorAll('button, .option').forEach(element => {
+                element.addEventListener('mouseenter', () => {
+                    audioManager.play('buttonHover', 0.3);
+                });
+            });
+        }
+
+        // Initialize audio when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initAudio);
+
+        // Scenario data
+        const scenarios = [
+            {
+                title: "Data Storage Decision",
+                description: "You need to store important project documentation that must remain accessible for at least 10 years. Which storage solution would you choose?",
+                options: [
+                    "Store on a local hard drive",
+                    "Use a traditional cloud storage provider",
+                    "Upload to Irys for permanent storage",
+                    "Print and store physical copies"
+                ],
+                correct: 2,
+                feedback: "Irys provides permanent, uncensorable storage that ensures your documents remain accessible for the required duration without risk of deletion or service shutdown."
+            },
+            {
+                title: "Cost-Effective Storage",
+                description: "Your startup has limited funds but needs to store a growing amount of user-generated content. What's the most cost-effective solution?",
+                options: [
+                    "Pay for a traditional cloud storage solution with monthly fees",
+                    "Build and maintain your own storage infrastructure",
+                    "Use Irys with its one-time payment model",
+                    "Limit user uploads to reduce storage needs"
+                ],
+                correct: 2,
+                feedback: "Irys's one-time payment model for permanent storage is more cost-effective in the long run compared to recurring monthly fees, especially as your storage needs grow."
+            },
+            {
+                title: "Data Integrity",
+                description: "You need to ensure that important legal documents cannot be tampered with. How would you verify their integrity over time?",
+                options: [
+                    "Store multiple copies in different locations",
+                    "Use Irys to get a permanent, verifiable content ID",
+                    "Rely on timestamps from your computer",
+                    "Email copies to yourself"
+                ],
+                correct: 1,
+                feedback: "Irys provides cryptographic hashes (content IDs) that allow you to verify the integrity of your documents at any time, ensuring they haven't been altered."
+            },
+            {
+                title: "Content Distribution",
+                description: "Your application needs to serve media files to users around the world with low latency. What's the best approach?",
+                options: [
+                    "Use a single server in one location",
+                    "Rely on a traditional CDN with centralized control",
+                    "Use Irys for decentralized content distribution",
+                    "Ask users to host content locally"
+                ],
+                correct: 2,
+                feedback: "Irys's decentralized network ensures your content is served from multiple locations globally, providing low-latency access to users worldwide without relying on a single point of failure."
+            },
+            {
+                title: "Censorship Resistance",
+                description: "You're building a platform for free speech in a region with internet censorship. How can you ensure content remains accessible?",
+                options: [
+                    "Host on a server in a different country",
+                    "Use Irys's decentralized, uncensorable storage",
+                    "Rely on VPN services",
+                    "Distribute content via email attachments"
+                ],
+                correct: 1,
+                feedback: "Irys's decentralized nature makes it resistant to censorship, ensuring your content remains accessible even if some nodes are blocked or taken down."
+            }
+        ];
+        
+        let currentScenario = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let scenarioResults = [];
+        
+        // DOM Elements
+        const scenarioTitle = document.getElementById('scenario-title');
+        const scenarioDesc = document.getElementById('scenario-description');
+        const optionsEl = document.getElementById('options');
+        const feedbackEl = document.getElementById('feedback');
+        const nextBtn = document.getElementById('next-btn');
+        const scenarioArea = document.getElementById('scenario-area');
+        const resultsArea = document.getElementById('results');
+        const resultTitle = document.getElementById('result-title');
+        const resultMessage = document.getElementById('result-message');
+        const scenarioResultsEl = document.getElementById('scenario-results');
+        const nextLevelBtn = document.getElementById('next-level');
+        const progressBar = document.getElementById('progress-bar');
+        
+        // Initialize the game
+        document.addEventListener('DOMContentLoaded', () => {
+            loadScenario();
+        });
+        
+        function loadScenario() {
+            if (currentScenario >= scenarios.length) {
+                showResults();
+                return;
+            }
+            
+            const scenario = scenarios[currentScenario];
+            
+            // Update progress bar
+            progressBar.style.width = `${(currentScenario / scenarios.length) * 100}%`;
+            
+            // Update scenario info
+            scenarioTitle.textContent = `Scenario ${currentScenario + 1}: ${scenario.title}`;
+            scenarioDesc.textContent = scenario.description;
+            
+            // Clear previous options and feedback
+            optionsEl.innerHTML = '';
+            feedbackEl.textContent = '';
+            feedbackEl.className = 'feedback';
+            feedbackEl.style.display = 'none';
+            nextBtn.style.display = 'none';
+            
+            // Create option buttons
+            scenario.options.forEach((option, index) => {
+                const button = document.createElement('div');
+                button.className = 'option';
+                button.textContent = option;
+                button.onclick = () => selectOption(index);
+                optionsEl.appendChild(button);
+            });
+            
+            // Reset selected answer
+            selectedAnswer = null;
+        }
+        
+        function selectOption(selectedIndex) {
+            if (selectedAnswer !== null) return; // Prevent multiple selections
+            
+            audioManager.play('optionSelect');
+            
+            const scenario = scenarios[currentScenario];
+            const isCorrect = selectedIndex === scenario.correct;
+            
+            // Disable all options
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => {
+                option.style.pointerEvents = 'none';
+            });
+            
+            // Highlight selected answer
+            if (isCorrect) {
+                options[selectedIndex].classList.add('correct');
+                score++;
+                audioManager.play('correctAnswer');
+            } else {
+                options[selectedIndex].classList.add('incorrect');
+                options[scenario.correct].classList.add('correct');
+                audioManager.play('wrongAnswer');
+            }
+            
+            // Show feedback
+            feedbackEl.textContent = scenario.feedback;
+            feedbackEl.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+            feedbackEl.style.display = 'block';
+            
+            // Store result
+            scenarioResults.push({
+                question: scenario.title,
+                correct: isCorrect,
+                selected: scenario.options[selectedIndex],
+                correctAnswer: scenario.options[scenario.correct]
+            });
+            
+            // Show next button
+            nextBtn.style.display = 'inline-block';
+            nextBtn.addEventListener('mouseenter', () => audioManager.play('buttonHover', 0.3));
+            nextBtn.onclick = nextScenario;
+        }
+        
+        function nextScenario() {
+            audioManager.play('buttonHover');
+            currentScenario++;
+            loadScenario();
+        }
+        
+        function showResults() {
+            // Update progress bar to 100%
+            progressBar.style.width = '100%';
+            
+            // Hide scenario area and show results
+            scenarioArea.style.display = 'none';
+            resultsArea.style.display = 'block';
+            
+            const percentage = Math.round((score / scenarios.length) * 100);
+            
+            // Set result title and message
+            resultTitle.textContent = `Score: ${score} out of ${scenarios.length} (${percentage}%)`;
+            
+            if (percentage >= 80) {
+                resultMessage.textContent = 'Excellent! You\'ve demonstrated a strong understanding of Irys use cases.';
+                nextLevelBtn.style.display = 'inline-block';
+                
+                // Save progress
+                const gameState = JSON.parse(localStorage.getItem('irysTownProgress') || '{}');
+                gameState.completedLevels = gameState.completedLevels || [];
+                if (!gameState.completedLevels.includes(4)) {
+                    gameState.completedLevels.push(4);
+                    localStorage.setItem('irysTownProgress', JSON.stringify(gameState));
+                }
+            } else {
+                resultMessage.textContent = 'Good effort! Consider reviewing the scenarios to better understand Irys use cases.';
+                nextLevelBtn.style.display = 'none';
+            }
+            
+            // Show detailed results
+            scenarioResultsEl.innerHTML = '<h3>Detailed Results:</h3>';
+            scenarioResults.forEach((result, index) => {
+                const resultItem = document.createElement('div');
+                resultItem.style.margin = '0.5rem 0';
+                resultItem.style.padding = '0.5rem';
+                resultItem.style.borderLeft = `4px solid ${result.correct ? '#00ff00' : '#ff0000'}`;
+                resultItem.style.backgroundColor = result.correct ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 0, 0, 0.1)';
+                
+                resultItem.innerHTML = `
+                    <p><strong>${index + 1}. ${result.question}</strong></p>
+                    <p>Your answer: ${result.selected}</p>
+                    ${!result.correct ? `<p>Correct answer: ${result.correctAnswer}</p>` : ''}
+                `;
+                
+                scenarioResultsEl.appendChild(resultItem);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | Irys Town</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        .error-container {
+            text-align: center;
+            padding: 3rem 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .error-code {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 6rem;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            margin-bottom: 1.5rem;
+            animation: flicker 1.5s infinite alternate;
+        }
+        
+        .error-message {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+        }
+        
+        .error-description {
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            opacity: 0.9;
+        }
+        
+        .home-button {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: var(--primary-color);
+            color: #000;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: 2px solid var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .home-button:hover {
+            background: transparent;
+            color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        .astronaut {
+            width: 200px;
+            margin: 2rem auto;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 4rem;
+            }
+            
+            .error-message {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-container">
+            <div class="error-code">404</div>
+            <div class="error-message">Houston, we have a problem!</div>
+            
+            <div class="astronaut">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="80" fill="#f0f0f0" />
+                    <circle cx="80" cy="80" r="10" fill="#333" />
+                    <circle cx="120" cy="80" r="10" fill="#333" />
+                    <path d="M70 120 Q100 140 130 120" stroke="#333" stroke-width="3" fill="transparent" />
+                    <circle cx="100" cy="100" r="60" fill="none" stroke="#00d4ff" stroke-width="2" stroke-dasharray="5,5" />
+                </svg>
+            </div>
+            
+            <div class="error-description">
+                <p>Looks like you've ventured into the unknown! The page you're looking for doesn't exist or has been moved.</p>
+                <p>Don't worry, we'll help you get back on track.</p>
+            </div>
+            
+            <a href="index.html" class="home-button">Back to Irys Town</a>
+        </div>
+    </div>
+    
+    <script>
+        // Add some floating stars for effect
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.container');
+            const starCount = 20;
+            
+            for (let i = 0; i < starCount; i++) {
+                createStar();
+            }
+            
+            function createStar() {
+                const star = document.createElement('div');
+                star.style.position = 'fixed';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.background = '#fff';
+                star.style.borderRadius = '50%';
+                star.style.boxShadow = '0 0 5px #fff, 0 0 10px #00d4ff';
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.top = Math.random() * 100 + 'vh';
+                star.style.opacity = Math.random() * 0.5 + 0.5;
+                star.style.animation = `twinkle ${Math.random() * 3 + 2}s infinite`;
+                
+                document.body.appendChild(star);
+            }
+            
+            // Add animation for stars
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes twinkle {
+                    0%, 100% { opacity: 0.2; }
+                    50% { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "name": "irys-town",
+  "version": "1.0.0",
+  "description": "An interactive educational game to learn about Irys blockchain",
+  "main": "script.js",
+  "scripts": {
+    "start": "live-server --port=3000",
+    "dev": "http-server -p 8080",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "echo \"Deploying to Vercel...\" && vercel --prod"
+  },
+  "author": "MIR",
+  "license": "MIT",
+  "homepage": ".",
+  "private": true,
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {
+    "vercel": "^28.0.0"
+  },
+  "optionalDependencies": {
+    "canvas": "^2.11.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
